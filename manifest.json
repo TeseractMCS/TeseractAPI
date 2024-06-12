@@ -1,0 +1,38 @@
+{
+    "format_version": 2,
+    "header": {
+        "name": "§c§l[BP]§r §cTeseract UHC V2",
+        "description": "Version 2. By NxmbersCib.",
+        "uuid": "79587552-f454-4cee-855e-652b7675c507",
+        "version": [2, 2, 0],
+        "min_engine_version": [1, 20, 80]
+    },
+    "modules": [
+        {
+            "description": "Script resources",
+            "language": "javascript",
+            "type": "script",
+            "uuid": "530a69a2-11cc-4e69-9b13-bb99535184f5",
+            "version": [1, 0, 0],
+            "entry": "scripts/main.js"
+        }
+    ],
+    "dependencies": [
+        {
+            "module_name": "@minecraft/server",
+            "version": "1.11.0-beta"
+        },
+        {
+            "module_name": "@minecraft/server-gametest",
+            "version": "1.0.0-beta"
+        },
+        {
+            "module_name": "@minecraft/server-ui",
+            "version": "1.2.0-beta"
+        },
+        {
+            "uuid": "5d9d44ef-2a62-477c-b11c-6fe5bced9a40",
+            "version": [2, 0, 0]
+        }
+    ]
+}
