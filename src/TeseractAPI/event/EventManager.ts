@@ -54,7 +54,7 @@ export default class EventManager {
 
     public registerEventHandler(target: any) {
         const handlers = target.constructor.__eventHandlers;
-        console.warn(handlers.get(target.constructor.name));
+        
         if (handlers) {
             for (const { eventType, handler } of handlers.get(
                 target.constructor.name
