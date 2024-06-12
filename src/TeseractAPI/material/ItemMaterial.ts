@@ -1006,3 +1006,5 @@ export enum ItemMaterial {
   ZOMBIE_SPAWN_EGG = "minecraft:zombie_spawn_egg",
   ZOMBIE_VILLAGER_SPAWN_EGG = "minecraft:zombie_villager_spawn_egg",
 }
+
+export default ItemMaterial

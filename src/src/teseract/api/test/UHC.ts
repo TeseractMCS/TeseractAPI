@@ -5,7 +5,7 @@ import OnUse from "./component/OnUse";
 import eventListener from "TeseractAPI/event/EventListener";
 import { system } from "@minecraft/server";
 // import ItemUseEvent from "TeseractAPI/event/item/ItemUse";
-import { ItemMaterial } from "TeseractAPI/material/ItemMaterial";
+import ItemMaterial from "TeseractAPI/material/ItemMaterial";
 import Events from "TeseractAPI/event/Events";
 import UseTest from "./event/UseTest";
 import ItemEventsTest from "./event/item/ItemTest";
