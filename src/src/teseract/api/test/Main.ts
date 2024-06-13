@@ -1,9 +1,9 @@
 import Teseract from "TeseractAPI/Teseract";
 import TeseractPlugin from "TeseractAPI/plugin/TeseractPlugin";
 import CustomComponentRegistry from "TeseractAPI/custom_component/CustomComponentRegistry";
-import GoldenHeadComponent from "./component/GoldenHead";
+import GoldenHeadComponent from "./component/ComponentTest";
 
-export default class UHC extends TeseractPlugin {
+export default class Test extends TeseractPlugin {
     public override onEnabled(
         componentRegistry: CustomComponentRegistry
     ): void {

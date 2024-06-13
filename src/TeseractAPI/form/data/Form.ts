@@ -1,21 +1,33 @@
+/**
+ * @experimental
+ */
 export function buttonForm() {
     return function (target: any) {
         target.formType = "action";
     };
 }
 
+/**
+ * @experimental
+ */
 export function choiceForm() {
     return function (target: any) {
         target.formType = "message";
     };
 }
 
+/**
+ * @experimental
+ */
 export function messageForm() {
     return function (target: any) {
         target.formType = "message";
     };
 }
 
+/**
+ * @experimental
+ */
 export function formTitle() {
     return function (target: any, propertyKey: string) {
         if (!target.constructor.formMetaData) {
@@ -25,6 +37,9 @@ export function formTitle() {
     };
 }
 
+/**
+ * @experimental
+ */
 export function formBody() {
     return function (target: any, propertyKey: string) {
         if (!target.constructor.formMetaData) {
@@ -34,6 +49,9 @@ export function formBody() {
     };
 }
 
+/**
+ * @experimental
+ */
 export function formButton() {
     return function (
         target: any,
@@ -52,6 +70,9 @@ export function formButton() {
     };
 }
 
+/**
+ * @experimental
+ */
 export function firstChoice() {
     return function (target: any, propertyKey: string) {
         if (!target.constructor.formMetaData) {
