@@ -1,6 +1,6 @@
 import * as MinecraftServer from "@minecraft/server";
 import CancellableItemEvent from "./CancellableItemEvent";
-import Block from "TeseractAPI/Block";
+import Block from "TeseractAPI/block/Block";
 import Location from "TeseractAPI/Location";
 import Teseract from "TeseractAPI/Teseract";
 import ItemEventBase from "./ItemEventBase";

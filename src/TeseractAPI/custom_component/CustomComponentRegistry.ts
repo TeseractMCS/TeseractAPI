@@ -1,7 +1,10 @@
 import Teseract from "TeseractAPI/Teseract";
 import { ItemCustomComponent } from "./ItemCustomComponent";
 import * as MinecraftServer from "@minecraft/server";
-import ItemComponentUseEvent from "./event/ItemComponentEvents";
+import {
+    ItemComponentUseEvent,
+    ItemComponentConsumeEvent,
+} from "./event/ItemComponentEvents";
 import { BlockCustomComponent } from "./BlockCustomComponent";
 import {
     BlockComponentEntityFallOnEvent,
@@ -14,13 +17,14 @@ import {
     BlockComponentStepOnEvent,
     BlockComponentTickEvent,
 } from "./event/BlockComponentEvents";
+import EventManager from "TeseractAPI/event/EventManager";
 
 export default class CustomComponentRegistry {
     #registry = {
         Item: new Map<string, ItemCustomComponent>(),
         Block: new Map<string, BlockCustomComponent>(),
     };
-    
+
     #itemComponentRegistry;
     #blockComponentRegistry;
 
@@ -49,7 +53,12 @@ export default class CustomComponentRegistry {
                     }
                 },
             });
-            console.warn("Component registered")
+            MinecraftServer.world.afterEvents.itemCompleteUse.subscribe(arg => {
+                if (customComponent.onConsume) {
+                    customComponent.onConsume(new ItemComponentConsumeEvent(arg))
+                }
+            })
+            console.warn("Component registered");
         } catch (error) {
             Teseract.log(error, error.stack);
         }
@@ -131,4 +140,3 @@ export default class CustomComponentRegistry {
         }
     }
 }
-

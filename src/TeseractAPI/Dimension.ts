@@ -1,37 +1,29 @@
-import { NumberRange } from "@minecraft/common";
-import {
-    BiomeSearchOptions,
-    BiomeType,
-    Block,
-    BlockFillOptions,
-    BlockFilter,
-    BlockPermutation,
-    BlockRaycastHit,
-    BlockRaycastOptions,
-    BlockType,
-    BlockVolumeBase,
-    CommandResult,
-    Entity,
-    EntityQueryOptions,
-    EntityRaycastHit,
-    EntityRaycastOptions,
-    ExplosionOptions,
-    ItemStack,
-    ListBlockVolume,
-    Dimension as MinecraftDimension,
-    MolangVariableMap,
-    Player,
-    SpawnEntityOptions,
-    Vector3,
-    WeatherType,
-    WorldSoundOptions,
-    UnloadedChunksError
-} from "@minecraft/server";
+import * as MinecraftServer from "@minecraft/server";
 import Teseract from "./Teseract";
+import Location, { LocationParseFormat } from "./Location";
+import { Vector3 } from "./util/Vector";
+import BlockPermutation from "./block/BlockPermutation";
+import ExplosionOptions from "./options/ExplosionOptions";
+import ItemStack from "./Inventory/ItemStack";
+import Entity from "./entity/Entity";
+import NativeParserUtil from "./util/NativeLocationParser";
+import EntityQueryOptions from "./options/entity/query/EntityQueryOptions";
+import Player from "./entity/Player";
+import EntityRaycastOptions from "./options/entity/raycast/EntityRaycastOptions";
+import EntityRaycastHit from "./options/entity/raycast/EntityRaycastHit";
+import Block from "./block/Block";
+import BlockFilter from "./block/BlockFilter";
+import BlockFillOptions from "./block/BlockFillOptions";
+import BlockRaycastHit from "./block/raycast/BlockRaycastHit";
+import DimensionLocation from "./DimensionLocation";
+import BlockRaycastOptions from "./block/raycast/BlockRaycastOptions";
+
+// import BlockVolumeBase from "./block/BlockVolumeBase";
+// import ListBlockVolume from "./block/ListBlockVolume";
 
 export default abstract class Dimension {
-    #dimension_data: MinecraftDimension;
-    constructor(dimensionData: MinecraftDimension) {
+    #dimension_data: MinecraftServer.Dimension;
+    constructor(dimensionData: MinecraftServer.Dimension) {
         this.#dimension_data = dimensionData;
     }
 
@@ -49,24 +41,24 @@ export default abstract class Dimension {
      *
      * @throws
      * This function can throw errors.
-     * 
+     *
      * {@link Error}
      * {@link UnloadedChunksError}
-     * @param volume BlockVolume to serach for the desired block filter 
+     * @param volume BlockVolume to serach for the desired block filter
      * @param filter BlockFilter for searching specific block attributes
      * @param allowUnloadedChunks
-     * @returns Returns wheter the given BlockVolume includes a block according to the {@link volume} filter 
+     * @returns Returns wheter the given BlockVolume includes a block according to the {@link volume} filter
      */
-    containsBlock(
-        volume: BlockVolumeBase,
-        filter: BlockFilter,
-        allowUnloadedChunks?: boolean | undefined
+    public containsBlock(
+        volume: MinecraftServer.BlockVolumeBase,
+        filter: MinecraftServer.BlockFilter,
+        allowUnloadedChunks?: boolean | undefined,
     ): boolean {
         try {
             return this.#dimension_data.containsBlock(
                 volume,
                 filter,
-                allowUnloadedChunks
+                allowUnloadedChunks,
             );
         } catch (error) {
             Teseract.log(error);
@@ -74,104 +66,308 @@ export default abstract class Dimension {
         }
     }
 
-    createExplosion(
-        location: Vector3,
+    public createExplosion(
+        location:
+            | Vector3
+            | Location
+            | MinecraftServer.Vector3
+            | Vector3
+            | Location,
         radius: number,
-        explosionOptions?: ExplosionOptions | undefined
+        explosionOptions?: ExplosionOptions | undefined,
     ): boolean {
-        throw new Error("Method not implemented.");
+        try {
+            const destination =
+                location instanceof Location ? location.getVector() : location;
+            (
+                explosionOptions as unknown as MinecraftServer.ExplosionOptions
+            ).source = explosionOptions.source.getNativeHandle();
+
+            return this.#dimension_data.createExplosion(
+                destination,
+                radius,
+                explosionOptions as unknown as MinecraftServer.ExplosionOptions,
+            );
+        } catch (error) {
+            Teseract.log(error, error.stack);
+        }
     }
-    fillBlocks(
-        begin: Vector3,
-        end: Vector3,
-        block: string | BlockPermutation | BlockType,
-        options?: BlockFillOptions | undefined
+
+    public fillBlocks(
+        begin: MinecraftServer.Vector3 | Vector3 | Location,
+        end: MinecraftServer.Vector3 | Vector3 | Location,
+        block: string | BlockPermutation | MinecraftServer.BlockType,
+        options?: BlockFillOptions | undefined,
     ): number {
-        throw new Error("Method not implemented.");
+        try {
+            return this.#dimension_data.fillBlocks(
+                NativeParserUtil.ToNativeLocation(begin),
+                NativeParserUtil.ToNativeLocation(end),
+                NativeParserUtil.ToNativePermutation(block),
+                {
+                    matchingBlock: options.matchingBlock.getNativeHandle(),
+                },
+            );
+        } catch (error) {
+            Teseract.log(error, error.stack);
+        }
     }
-    findClosestBiome(
-        pos: Vector3,
-        biomeToFind: string | BiomeType,
-        options?: BiomeSearchOptions | undefined
+
+    public findClosestBiome(
+        pos: MinecraftServer.Vector3 | Vector3 | Location,
+        biomeToFind: string | MinecraftServer.BiomeType,
+        options?: MinecraftServer.BiomeSearchOptions | undefined,
     ): Vector3 | undefined {
-        throw new Error("Method not implemented.");
+        try {
+            const biomeLoc = this.#dimension_data.findClosestBiome(
+                NativeParserUtil.ToNativeLocation(pos),
+                biomeToFind,
+                options,
+            );
+            return biomeLoc ? new Vector3(biomeLoc) : undefined;
+        } catch (error) {
+            Teseract.log(error, error.stack);
+        }
     }
-    getBlock(location: Vector3): Block | undefined {
-        throw new Error("Method not implemented.");
+
+    public getBlock(
+        location: MinecraftServer.Vector3 | Vector3 | Location,
+    ): Block | undefined {
+        try {
+            const block = this.#dimension_data.getBlock(
+                NativeParserUtil.ToNativeLocation(location),
+            );
+            return block ? new Block(block) : undefined;
+        } catch (error) {
+            Teseract.log(error, error.stack);
+        }
     }
-    getBlockFromRay(
-        location: Vector3,
-        direction: Vector3,
-        options?: BlockRaycastOptions | undefined
+
+    public getBlockFromRay(
+        location: MinecraftServer.Vector3 | Vector3 | Location,
+        direction: MinecraftServer.Vector3 | Vector3 | Location,
+        options?: BlockRaycastOptions | undefined,
     ): BlockRaycastHit | undefined {
-        throw new Error("Method not implemented.");
+        try {
+            const hit = this.#dimension_data.getBlockFromRay(
+                NativeParserUtil.ToNativeLocation(location),
+                NativeParserUtil.ToNativeLocation(direction),
+                options,
+            );
+
+            if (!hit) {
+                return undefined;
+            }
+
+            const parsedHit = {
+                block: new Block(hit.block),
+                face: hit.face,
+                faceLocation: new DimensionLocation(this, hit.faceLocation),
+            };
+
+            return parsedHit;
+        } catch (error) {
+            Teseract.log(error, error.stack);
+        }
     }
-    getBlocks(
-        volume: BlockVolumeBase,
+
+    public getBlocks(
+        volume: MinecraftServer.BlockVolumeBase,
         filter: BlockFilter,
-        allowUnloadedChunks?: boolean | undefined
-    ): ListBlockVolume {
-        throw new Error("Method not implemented.");
+        allowUnloadedChunks?: boolean | undefined,
+    ): MinecraftServer.ListBlockVolume {
+        try {
+            return this.#dimension_data.getBlocks(
+                volume,
+                filter,
+                allowUnloadedChunks,
+            );
+        } catch (error) {
+            Teseract.log(error, error.stack);
+        }
     }
-    getEntities(options?: EntityQueryOptions | undefined): Entity[] {
-        throw new Error("Method not implemented.");
+
+    public getEntities(options?: EntityQueryOptions | undefined): Entity[] {
+        try {
+            return this.#dimension_data
+                .getEntities()
+                .map((entity) => new Entity(entity));
+        } catch (error) {
+            Teseract.log(error, error.stack);
+        }
     }
-    getEntitiesAtBlockLocation(location: Vector3): Entity[] {
-        throw new Error("Method not implemented.");
+
+    public getEntitiesAtBlockLocation(
+        location: MinecraftServer.Vector3 | Vector3 | Location,
+    ): Entity[] {
+        try {
+            return this.#dimension_data
+                .getEntitiesAtBlockLocation(
+                    NativeParserUtil.ToNativeLocation(location),
+                )
+                .map((entity) => new Entity(entity));
+        } catch (error) {
+            Teseract.log(error, error.stack);
+        }
     }
-    getEntitiesFromRay(
-        location: Vector3,
-        direction: Vector3,
-        options?: EntityRaycastOptions | undefined
+
+    public getEntitiesFromRay(
+        location: MinecraftServer.Vector3 | Vector3 | Location,
+        direction: MinecraftServer.Vector3 | Vector3 | Location,
+        options?: EntityRaycastOptions | undefined,
     ): EntityRaycastHit[] {
-        throw new Error("Method not implemented.");
+        try {
+            const hits = this.#dimension_data.getEntitiesFromRay(
+                NativeParserUtil.ToNativeLocation(location),
+                NativeParserUtil.ToNativeLocation(direction),
+                options,
+            );
+
+            return hits?.map((hit) => {
+                const parsedHit = {
+                    entity: NativeParserUtil.NativeOptionalEntity(hit.entity),
+                    distance: hit.distance,
+                };
+                return parsedHit;
+            });
+        } catch (error) {
+            Teseract.log(error, error.stack);
+        }
     }
-    getPlayers(options?: EntityQueryOptions | undefined): Player[] {
-        throw new Error("Method not implemented.");
+
+    public getPlayers(options?: EntityQueryOptions | undefined): Player[] {
+        try {
+            return this.#dimension_data
+                .getPlayers(options)
+                .map((p) => new Player(p));
+        } catch (error) {
+            Teseract.log(error, error.stack);
+        }
     }
-    getWeather(): WeatherType {
-        throw new Error("Method not implemented.");
+
+    public getWeather(): MinecraftServer.WeatherType {
+        try {
+            return this.#dimension_data.getWeather();
+        } catch (error) {
+            Teseract.log(error, error.stack);
+        }
     }
-    playSound(
+
+    public playSound(
         soundId: string,
-        location: Vector3,
-        soundOptions?: WorldSoundOptions | undefined
+        location: MinecraftServer.Vector3 | Vector3 | Location,
+        soundOptions?: MinecraftServer.WorldSoundOptions | undefined,
     ): void {
-        throw new Error("Method not implemented.");
+        try {
+            const destination = NativeParserUtil.ToNativeLocation(location);
+
+            this.#dimension_data.playSound(soundId, destination, soundOptions);
+        } catch (error) {
+            Teseract.log(error, error.stack);
+        }
     }
-    runCommand(commandString: string): CommandResult {
-        throw new Error("Method not implemented.");
+
+    public runCommand(commandString: string): MinecraftServer.CommandResult {
+        return this.#dimension_data.runCommand(commandString);
     }
-    runCommandAsync(commandString: string): Promise<CommandResult> {
-        throw new Error("Method not implemented.");
+
+    public runCommandAsync(
+        commandString: string,
+    ): Promise<MinecraftServer.CommandResult> {
+        return this.#dimension_data.runCommandAsync(commandString);
     }
-    setBlockPermutation(
-        location: Vector3,
-        permutation: BlockPermutation
+
+    public setBlockPermutation(
+        location: MinecraftServer.Vector3 | Vector3 | Location,
+        permutation: BlockPermutation,
     ): void {
-        throw new Error("Method not implemented.");
+        try {
+            this.#dimension_data.setBlockPermutation(
+                NativeParserUtil.ToNativeLocation(location),
+                permutation.getNativeHandle(),
+            );
+        } catch (error) {
+            Teseract.log(error, error.stack);
+        }
     }
-    setBlockType(location: Vector3, blockType: string | BlockType): void {
-        throw new Error("Method not implemented.");
+
+    public setBlockType(
+        location: MinecraftServer.Vector3 | Vector3 | Location,
+        blockType: string | MinecraftServer.BlockType,
+    ): void {
+        try {
+            this.#dimension_data.setBlockType(
+                NativeParserUtil.ToNativeLocation(location),
+                blockType,
+            );
+        } catch (error) {
+            Teseract.log(error, error.stack);
+        }
     }
-    setWeather(weatherType: WeatherType, duration?: number | undefined): void {
-        throw new Error("Method not implemented.");
+
+    public setWeather(
+        weatherType: MinecraftServer.WeatherType,
+        duration?: number | undefined,
+    ): void {
+        try {
+            this.#dimension_data.setWeather(weatherType, duration);
+        } catch (error) {
+            Teseract.log(error, error.stack);
+        }
     }
-    spawnEntity(
+
+    public spawnEntity(
         identifier: string,
-        location: Vector3,
-        options?: SpawnEntityOptions | undefined
+        location: MinecraftServer.Vector3 | Vector3 | Location,
+        options?: MinecraftServer.SpawnEntityOptions | undefined,
     ): Entity {
-        throw new Error("Method not implemented.");
+        try {
+            return new Entity(
+                this.#dimension_data.spawnEntity(
+                    identifier,
+                    NativeParserUtil.ToNativeLocation(location),
+                    options,
+                ),
+            );
+        } catch (error) {
+            Teseract.log(error, error.stack);
+        }
     }
-    spawnItem(itemStack: ItemStack, location: Vector3): Entity {
-        throw new Error("Method not implemented.");
+
+    public spawnItem(
+        itemStack: ItemStack,
+        location:
+            | Vector3
+            | Location
+            | MinecraftServer.Vector3
+            | Vector3
+            | Location,
+    ): Entity {
+        try {
+            return new Entity(
+                this.#dimension_data.spawnItem(
+                    itemStack.getNativeHandle(),
+                    NativeParserUtil.ToNativeLocation(location),
+                ),
+            );
+        } catch (error) {
+            Teseract.log(error, error.stack);
+        }
     }
-    spawnParticle(
+
+    public spawnParticle(
         effectName: string,
-        location: Vector3,
-        molangVariables?: MolangVariableMap | undefined
+        location: Vector3 | MinecraftServer.Vector3 | Location,
+        molangVariables?: MinecraftServer.MolangVariableMap | undefined,
     ): void {
-        throw new Error("Method not implemented.");
+        try {
+            this.#dimension_data.spawnParticle(
+                effectName,
+                NativeParserUtil.ToNativeLocation(location),
+                molangVariables,
+            );
+        } catch (error) {
+            Teseract.log(error, error.stack);
+        }
     }
 }

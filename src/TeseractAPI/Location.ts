@@ -17,8 +17,17 @@ export enum LocationParseFormat {
 
 export default class Location {
     #Location: MinecraftServer.Vector3;
-    constructor(x: number, y: number, z: number) {
-        this.#Location = { x: x, y: y, z: z };
+
+    constructor(vector: Vector3);
+    constructor(vector: MinecraftServer.Vector3);
+    constructor(x: number, y: number, z: number);
+
+    constructor(arg1: Vector3 | MinecraftServer.Vector3 | number, y?: number, z?: number) {
+        if (typeof arg1 === 'number') {
+            this.#Location = { x: arg1, y: y!, z: z! };
+        } else {
+            this.#Location = { x: arg1.x, y: arg1.y, z: arg1.z };
+        }
     }
 
     /**

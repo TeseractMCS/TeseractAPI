@@ -24,8 +24,8 @@ esbuild
         target: ["es2020"],
         format: "esm",
         external,
-        minify: true,
-        // minify: false,
+        // minify: true,
+        minify: false,
         // minifySyntax: true,
     })
     .then(() => {

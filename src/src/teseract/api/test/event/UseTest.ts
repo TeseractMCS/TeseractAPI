@@ -1,9 +1,14 @@
+import { ItemCustomComponent } from "TeseractAPI/custom_component/ItemCustomComponent";
+import { ItemComponentConsumeEvent } from "TeseractAPI/custom_component/event/ItemComponentEvents";
 import eventListener from "TeseractAPI/event/EventListener";
 import Events from "TeseractAPI/event/Events";
-import ItemUseEvent from "TeseractAPI/event/item/ItemUse";
+import ItemUseEvent from "TeseractAPI/event/item/ItemUseEvent";
 import ItemUseOnEvent from "TeseractAPI/event/item/ItemUseOnEvent";
 
-export default class UseTest {
+export default class UseTest extends ItemCustomComponent {
+    override onConsume = (arg: ItemComponentConsumeEvent) => {
+        arg.getPlayer().sendMessage("Te tragaste una golden jed")
+    }; 
     @eventListener(Events.ItemUseEvent)
     onUsed(event: ItemUseEvent) {
         const player = event.getPlayer();

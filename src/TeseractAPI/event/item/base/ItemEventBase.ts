@@ -11,7 +11,7 @@ export default class ItemEventBase {
         source: MinecraftServer.Player;
     }) {
         this.#minecraft_data = {
-            item: new ItemStack(eventData.itemStack),
+            item: eventData.itemStack ? new ItemStack(eventData.itemStack) : undefined,
             source: new Player(eventData.source),
         };
     }
@@ -32,7 +32,7 @@ export default class ItemEventBase {
      * @remarks
      * ItemStack involved in this event.
      */
-    public getItemStack() {
+    public getItemStack(): ItemStack | undefined {
         try {
             return this.#minecraft_data.item;
         } catch (error) {

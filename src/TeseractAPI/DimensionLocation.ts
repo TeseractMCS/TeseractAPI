@@ -2,6 +2,7 @@ import * as MinecraftServer from "@minecraft/server";
 import Teseract from "TeseractAPI/Teseract";
 import Dimension from "TeseractAPI/Dimension";
 import Location from "TeseractAPI/Location";
+import { Vector3 } from "./util/Vector";
 
 /**
  * A class that represents an exact coordinate within the {@link @minecraft/server.World}, including its dimension and location.
@@ -9,8 +10,25 @@ import Location from "TeseractAPI/Location";
 export default class DimensionLocation extends Location {
     #dimension: Dimension;
 
-    constructor(x: number, y: number, z: number, dimension: Dimension) {
-        super(x, y, z);
+    constructor(dimension: Dimension, vector: Vector3);
+    constructor(dimension: Dimension, vector: MinecraftServer.Vector3);
+    constructor(dimension: Dimension, x: number, y: number, z: number);
+    
+    constructor(
+        dimension: Dimension,
+        arg1: Vector3 | MinecraftServer.Vector3 | number,
+        y?: number,
+        z?: number,
+    ) {
+        let data;
+
+        if (typeof arg1 === "number") {
+            data = { x: arg1, y: y, z: z };
+        } else {
+            data = { x: arg1.x, y: arg1.y, z: arg1.z };
+        }
+
+        super(data);
         this.#dimension = dimension;
     }
 
@@ -26,11 +44,11 @@ export default class DimensionLocation extends Location {
                 y: this.getY(),
                 z: this.getZ(),
                 dimension: MinecraftServer.world.getDimension(
-                    this.getDimension().getIdentifier()
+                    this.getDimension().getIdentifier(),
                 ),
             };
         } catch (error: any) {
-            Teseract.log(error, error.stack)
+            Teseract.log(error, error.stack);
         }
     }
 
@@ -44,7 +62,7 @@ export default class DimensionLocation extends Location {
         try {
             return this.#dimension;
         } catch (error: any) {
-            Teseract.log(error, error.stack)
+            Teseract.log(error, error.stack);
         }
     }
 }

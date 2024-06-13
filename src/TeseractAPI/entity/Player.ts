@@ -5,59 +5,88 @@ import ItemStack from "TeseractAPI/Inventory/ItemStack";
 import Location, { LocationParseFormat } from "TeseractAPI/Location";
 // import { PlayerInventory } from "../../inventory/PlayerInventory";
 import DimensionLocation from "TeseractAPI/DimensionLocation";
+import { PlayerInventory } from "TeseractAPI/Inventory/PlayerInventory";
+import FormManager from "TeseractAPI/form/FormManager";
 
 export default class Player extends Entity {
-    #minecraft_player: MinecraftServer.Player;
+    #minecraftPlayer: MinecraftServer.Player;
+
     constructor(player: MinecraftServer.Player) {
         super(player);
-        this.#minecraft_player = player;
+        this.#minecraftPlayer = player;
     }
+
     #CheckValid() {
-        if (!this.#minecraft_player.isValid)
+        if (!this.#minecraftPlayer.isValid)
             throw new Error(
                 `This Entity (${
-                    this.#minecraft_player.id
-                }) is not valid. Make sure that the Entity is valid before invoking any methods.`
+                    this.#minecraftPlayer.id
+                }) is not valid. Make sure that the Entity is valid before invoking any methods.`,
             );
+    }
+
+    public showForm(form: any) {
+        try {
+            FormManager.getInstance().showForm(this, form);
+        } catch (error) {
+            Teseract.log(error, error.stack);
+        }
+    }
+
+    public override getNativeHandle(): MinecraftServer.Player {
+        return this.#minecraftPlayer;
+    }
+
+    public kick(reason?: string) {
+        try {
+            this.#minecraftPlayer?.runCommand(
+                `kick "${this.#minecraftPlayer.name}" ${reason}`,
+            );
+        } catch (error: any) {
+            Teseract.log(error, error.stack);
+        }
     }
 
     public eatItem(foodItem: ItemStack) {
         try {
             this.#CheckValid();
-            this.#minecraft_player.eatItem(foodItem.cloneNativeItemStack());
+            this.#minecraftPlayer.eatItem(foodItem.getNativeHandle());
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
     }
+
     public override getHealth(): number | undefined {
         try {
             this.#CheckValid();
-            return this.#minecraft_player.getComponent("minecraft:health")
+            return this.#minecraftPlayer.getComponent("minecraft:health")
                 ?.currentValue as number;
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
     }
+
     public override setHealth(newHealth: number) {
         try {
             this.#CheckValid();
-            return this.#minecraft_player
+            return this.#minecraftPlayer
                 .getComponent("minecraft:health")
                 ?.setCurrentValue(newHealth) as boolean;
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
     }
+
     public getBelowBlock(distance?: number): MinecraftServer.Block | undefined {
         try {
             this.#CheckValid();
-            const loc = this.#minecraft_player.location;
-            return this.#minecraft_player.dimension.getBlockFromRay(
+            const loc = this.#minecraftPlayer.location;
+            return this.#minecraftPlayer.dimension.getBlockFromRay(
                 loc,
                 { x: 0, y: -1, z: 0 },
                 {
                     maxDistance: distance,
-                }
+                },
             )?.block;
         } catch (error: any) {
             if (
@@ -78,7 +107,7 @@ export default class Player extends Entity {
     public setGameMode(newGamemode: MinecraftServer.GameMode) {
         try {
             this.#CheckValid();
-            this.#minecraft_player.setGameMode(newGamemode);
+            this.#minecraftPlayer.setGameMode(newGamemode);
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
@@ -86,9 +115,9 @@ export default class Player extends Entity {
     public setPermission(newPermissionLevel: number) {
         try {
             this.#CheckValid();
-            return this.#minecraft_player.setDynamicProperty(
+            return this.#minecraftPlayer.setDynamicProperty(
                 "teseract:permission",
-                newPermissionLevel
+                newPermissionLevel,
             );
         } catch (error: any) {
             Teseract.log(error, error.stack);
@@ -97,80 +126,87 @@ export default class Player extends Entity {
     public getPermission(): number | undefined {
         try {
             this.#CheckValid();
-            return this.#minecraft_player.getDynamicProperty(
-                "teseract:permission"
+            return this.#minecraftPlayer.getDynamicProperty(
+                "teseract:permission",
             ) as number | undefined;
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
     }
-    // public override getInventory(): PlayerInventory | undefined {
-    //     try {
-    //         this.#CheckValid();
-    //         const inventory = this.#minecraft_player?.getComponent(
-    //             "minecraft:inventory"
-    //         );
-    //         if (!inventory) {
-    //             return;
-    //         }
-    //         return new PlayerInventory(inventory);
-    //     } catch (error: any) {
-    //         Teseract.log(error, error.stack);
-    //     }
-    // }
+
+    public override getInventory(): PlayerInventory | undefined {
+        try {
+            this.#CheckValid();
+            const inventory = this.#minecraftPlayer?.getComponent(
+                "minecraft:inventory",
+            );
+            if (!inventory) {
+                return;
+            }
+            return new PlayerInventory(inventory);
+        } catch (error: any) {
+            Teseract.log(error, error.stack);
+        }
+    }
+
     public addExperience(experienceAmount: number): number {
         try {
             this.#CheckValid();
-            return this.#minecraft_player.addExperience(experienceAmount);
+            return this.#minecraftPlayer.addExperience(experienceAmount);
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
     }
+
     public addLevels(levelsAmount: number): number {
         try {
             this.#CheckValid();
-            return this.#minecraft_player.addLevels(levelsAmount);
+            return this.#minecraftPlayer.addLevels(levelsAmount);
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
     }
+
     public getCamera(): MinecraftServer.Camera {
         try {
             this.#CheckValid();
-            return this.#minecraft_player.camera;
+            return this.#minecraftPlayer.camera;
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
     }
+
     public getItemCooldown(categoryName: string): number {
         try {
             this.#CheckValid();
-            return this.#minecraft_player.getItemCooldown(categoryName);
+            return this.#minecraftPlayer.getItemCooldown(categoryName);
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
     }
+
     public getSpawnPoint(): DimensionLocation | undefined {
         try {
             this.#CheckValid();
-            const dloc = this.#minecraft_player.getSpawnPoint();
-            if (!dloc) {
+            const dimensionLocation = this.#minecraftPlayer.getSpawnPoint();
+            if (!dimensionLocation) {
                 return undefined;
             }
             return new DimensionLocation(
-                dloc?.x,
-                dloc?.y,
-                dloc?.z,
-                Teseract.getDimension(dloc.dimension.id)
+                Teseract.getDimension(dimensionLocation.dimension.id),
+                dimensionLocation?.x,
+                dimensionLocation?.y,
+                dimensionLocation?.z,
             );
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
     }
+
     public getTotalXp(): number {
         try {
             this.#CheckValid();
-            return this.#minecraft_player.getTotalXp();
+            return this.#minecraftPlayer.getTotalXp();
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
@@ -178,7 +214,7 @@ export default class Player extends Entity {
     public isEmoting(): boolean {
         try {
             this.#CheckValid();
-            return this.#minecraft_player.isEmoting;
+            return this.#minecraftPlayer.isEmoting;
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
@@ -186,7 +222,7 @@ export default class Player extends Entity {
     public isFlying(): boolean {
         try {
             this.#CheckValid();
-            return this.#minecraft_player.isFlying;
+            return this.#minecraftPlayer.isFlying;
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
@@ -194,7 +230,7 @@ export default class Player extends Entity {
     public isGliding(): boolean {
         try {
             this.#CheckValid();
-            return this.#minecraft_player.isGliding;
+            return this.#minecraftPlayer.isGliding;
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
@@ -202,7 +238,7 @@ export default class Player extends Entity {
     public isJumping(): boolean {
         try {
             this.#CheckValid();
-            return this.#minecraft_player.isJumping;
+            return this.#minecraftPlayer.isJumping;
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
@@ -210,7 +246,7 @@ export default class Player extends Entity {
     public isOp(): boolean {
         try {
             this.#CheckValid();
-            return this.#minecraft_player.isOp();
+            return this.#minecraftPlayer.isOp();
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
@@ -218,7 +254,7 @@ export default class Player extends Entity {
     public getLevel(): number {
         try {
             this.#CheckValid();
-            return this.#minecraft_player.level;
+            return this.#minecraftPlayer.level;
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
@@ -226,7 +262,7 @@ export default class Player extends Entity {
     public getName() {
         try {
             this.#CheckValid();
-            return this.#minecraft_player.name;
+            return this.#minecraftPlayer.name;
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
@@ -234,7 +270,7 @@ export default class Player extends Entity {
     public getScreenDisplay(): MinecraftServer.ScreenDisplay {
         try {
             this.#CheckValid();
-            return this.#minecraft_player.onScreenDisplay;
+            return this.#minecraftPlayer.onScreenDisplay;
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
@@ -243,11 +279,11 @@ export default class Player extends Entity {
         musicName: string,
         volume?: number,
         fade?: number,
-        loop?: boolean
+        loop?: boolean,
     ): void {
         try {
             this.#CheckValid();
-            this.#minecraft_player.playMusic(musicName, {
+            this.#minecraftPlayer.playMusic(musicName, {
                 fade: fade,
                 loop: loop,
                 volume: volume,
@@ -260,11 +296,11 @@ export default class Player extends Entity {
         soundName: string,
         location?: Location,
         volume?: number,
-        pitch?: number
+        pitch?: number,
     ): void {
         try {
             this.#CheckValid();
-            return this.#minecraft_player.playSound(soundName, {
+            return this.#minecraftPlayer.playSound(soundName, {
                 location: location?.getVector(),
                 pitch: pitch,
                 volume: volume,
@@ -276,7 +312,7 @@ export default class Player extends Entity {
     public postClientMessage(id: string, value: string): void {
         try {
             this.#CheckValid();
-            this.#minecraft_player.postClientMessage(id, value);
+            this.#minecraftPlayer.postClientMessage(id, value);
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
@@ -285,11 +321,11 @@ export default class Player extends Entity {
         musicName: string,
         volume?: number,
         fade?: number,
-        loop?: boolean
+        loop?: boolean,
     ): void {
         try {
             this.#CheckValid();
-            this.#minecraft_player.queueMusic(musicName, {
+            this.#minecraftPlayer.queueMusic(musicName, {
                 fade: fade,
                 loop: loop,
                 volume: volume,
@@ -301,7 +337,7 @@ export default class Player extends Entity {
     public resetLevel(): void {
         try {
             this.#CheckValid();
-            this.#minecraft_player.resetLevel();
+            this.#minecraftPlayer.resetLevel();
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
@@ -309,7 +345,7 @@ export default class Player extends Entity {
     public getSelectedSlot(): number {
         try {
             this.#CheckValid();
-            return this.#minecraft_player.selectedSlot;
+            return this.#minecraftPlayer.selectedSlot;
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
@@ -318,11 +354,11 @@ export default class Player extends Entity {
         message:
             | string
             | MinecraftServer.RawMessage
-            | (string | MinecraftServer.RawMessage)[]
+            | (string | MinecraftServer.RawMessage)[],
     ): void {
         try {
             this.#CheckValid();
-            this.#minecraft_player.sendMessage(message);
+            this.#minecraftPlayer.sendMessage(message);
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
@@ -330,7 +366,7 @@ export default class Player extends Entity {
     public setOp(op: boolean): void {
         try {
             this.#CheckValid();
-            this.#minecraft_player.setOp(op);
+            this.#minecraftPlayer.setOp(op);
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
@@ -338,8 +374,8 @@ export default class Player extends Entity {
     public setSpawnPoint(newSpawnPoint: DimensionLocation): void {
         try {
             this.#CheckValid();
-            this.#minecraft_player.setSpawnPoint(
-                newSpawnPoint.getMinecraftDimensionLocation()
+            this.#minecraftPlayer.setSpawnPoint(
+                newSpawnPoint.getMinecraftDimensionLocation(),
             );
         } catch (error: any) {
             Teseract.log(error, error.stack);
@@ -348,7 +384,7 @@ export default class Player extends Entity {
     public startItemCooldown(itemCategory: string, ticksDelay: number): void {
         try {
             this.#CheckValid();
-            this.#minecraft_player.startItemCooldown(itemCategory, ticksDelay);
+            this.#minecraftPlayer.startItemCooldown(itemCategory, ticksDelay);
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
@@ -356,7 +392,7 @@ export default class Player extends Entity {
     public stopMusic(): void {
         try {
             this.#CheckValid();
-            this.#minecraft_player.stopMusic();
+            this.#minecraftPlayer.stopMusic();
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
@@ -364,7 +400,7 @@ export default class Player extends Entity {
     public getotalXpNeededForNextLevel(): number {
         try {
             this.#CheckValid();
-            return this.#minecraft_player.totalXpNeededForNextLevel;
+            return this.#minecraftPlayer.totalXpNeededForNextLevel;
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
@@ -372,7 +408,7 @@ export default class Player extends Entity {
     public getXpEarnedAtCurrentLevel(): number {
         try {
             this.#CheckValid();
-            return this.#minecraft_player.xpEarnedAtCurrentLevel;
+            return this.#minecraftPlayer.xpEarnedAtCurrentLevel;
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }

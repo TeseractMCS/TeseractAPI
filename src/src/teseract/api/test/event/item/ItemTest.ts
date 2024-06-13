@@ -13,10 +13,11 @@ export default class ItemEventsTest {
     @eventListener("ItemCompleteUseEvent")
     completeUse(event: ItemCompleteUseEvent) {
         try {
+            Teseract.broadcastMessage("ItemCompleteUseEvent:")
             Teseract.broadcastMessage(
                 `Use duration: ${event.getUseDuration()}\nPlayer: ${event
                     .getPlayer()
-                    .getName()}\nItem: ${event.getItemStack().getTypeId()}`
+                    .getName()}\nItem: ${event.getItemStack().getTypeId()}\n`
             );
         } catch (error) {
             Teseract.log(error, error.stack);
@@ -26,10 +27,11 @@ export default class ItemEventsTest {
     @eventListener("ItemReleaseUseEvent")
     releaseUse(event: ItemReleaseUseEvent) {
         try {
+            Teseract.broadcastMessage("ItemReleaseUseEvent:")
             Teseract.broadcastMessage(
                 `Use duration: ${event.getUseDuration()}\nPlayer: ${event
                     .getPlayer()
-                    .getName()}\nItem: ${event.getItemStack().getTypeId()}`
+                    .getName()}\nItem: ${event.getItemStack().getTypeId()}\n`
             );
         } catch (error) {
             Teseract.log(error, error.stack);
@@ -39,10 +41,11 @@ export default class ItemEventsTest {
     @eventListener("ItemStartUseEvent")
     startUse(event: ItemStartUseEvent) {
         try {
+            Teseract.broadcastMessage("ItemStartUseEvent:")
             Teseract.broadcastMessage(
                 `Use duration: ${event.getUseDuration()}\nPlayer: ${event
                     .getPlayer()
-                    .getName()}\nItem: ${event.getItemStack().getTypeId()}`
+                    .getName()}\nItem: ${event.getItemStack().getTypeId()}\n`
             );
         } catch (error) {
             Teseract.log(error, error.stack);
@@ -52,12 +55,13 @@ export default class ItemEventsTest {
     @eventListener("ItemStartUseOnEvent")
     startUseOn(event: ItemStartUseOnEvent) {
         try {
+            Teseract.broadcastMessage("ItemStartUseOnEvent:")
             Teseract.broadcastMessage(
                 `Player: ${event.getPlayer().getName()}\nItem: ${event
                     .getItemStack()
                     .getTypeId()}\nBlockface: ${event.getBlockFace()}\nBlock: ${
-                    event.getBlock().typeId
-                }`
+                    event.getBlock().getTypeId()
+                }\n`
             );
         } catch (error) {
             Teseract.log(error, error.stack);
@@ -67,10 +71,11 @@ export default class ItemEventsTest {
     @eventListener("ItemStopUseEvent")
     stopUse(event: ItemStopUseEvent) {
         try {
+            Teseract.broadcastMessage("ItemStopUseEvent:");
             Teseract.broadcastMessage(
                 `Use duration: ${event.getUseDuration()}\nPlayer: ${event
                     .getPlayer()
-                    .getName()}\nItem: ${event.getItemStack().getTypeId()}`
+                    .getName()}\nItem: ${event.getItemStack().getTypeId()}\n`
             );
         } catch (error) {
             Teseract.log(error, error.stack);
@@ -80,10 +85,11 @@ export default class ItemEventsTest {
     @eventListener("ItemStopUseOnEvent")
     stopUseOn(event: ItemStopUseOnEvent) {
         try {
+            Teseract.broadcastMessage("ItemStopUseOnEvent:")
             Teseract.broadcastMessage(
                 `Use duration: ${event.getUseDuration()}\nPlayer: ${event
                     .getPlayer()
-                    .getName()}\nItem: ${event.getItemStack().getTypeId()}`
+                    .getName()}\nItem: ${event.getItemStack().getTypeId()}\n`
             );
         } catch (error) {
             Teseract.log(error, error.stack);
@@ -93,10 +99,11 @@ export default class ItemEventsTest {
     @eventListener("ItemUseEvent")
     use(event: ItemUseEvent) {
         try {
+            Teseract.broadcastMessage("ItemUseEvent:")
             Teseract.broadcastMessage(
                 `Player: ${event.getPlayer().getName()}\nItem: ${event
                     .getItemStack()
-                    .getTypeId()}`
+                    .getTypeId()}\n`
             );
         } catch (error) {
             Teseract.log(error, error.stack);
@@ -106,12 +113,13 @@ export default class ItemEventsTest {
     @eventListener("ItemUseOnEvent")
     useOn(event: ItemUseOnEvent) {
         try {
+            Teseract.broadcastMessage("ItemUseOnEvent:")
             Teseract.broadcastMessage(
                 `Player: ${event.getPlayer().getName()}\nItem: ${event
                     .getItemStack()
                     .getTypeId()}\nBlockface: ${event.getBlockFace()}\nBlock: ${
-                    event.getBlock().typeId
-                }`
+                    event.getBlock().getTypeId()
+                }\n`
             );
         } catch (error) {
             Teseract.log(error, error.stack);

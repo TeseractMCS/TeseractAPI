@@ -1,50 +1,63 @@
-import * as MC from "@minecraft/server";
+import * as MinecraftServer from "@minecraft/server";
 import Teseract from "TeseractAPI/Teseract";
 import Dimension from "TeseractAPI/Dimension";
 import Location from "TeseractAPI/Location";
 import DimensionLocation from "TeseractAPI/DimensionLocation";
-// import { PotionEffects } from "../enum/PotionEffects";
-// import { DamageCause } from "../enum/DamageCause";
-// import { PotionEffect } from "../PotionEffect";
-// import { EntityRaycastHit } from "../interface/EntityRaycastHit";
-// import { Inventory } from "../inventory/Inventory";
-// import { MinecraftSounds } from "../enum/sounds/MinecraftSound";
+import PotionEffects from "TeseractAPI/potion/PotionEffects";
+import PotionEffect from "TeseractAPI/potion/PotionEffect";
+import Inventory from "TeseractAPI/Inventory/Inventory";
 
 export default class Entity {
-    #MCEntity: MC.Entity | MC.Player;
-    #MCPlayer?: MC.Player;
-    constructor(entity: MC.Entity | MC.Player) {
-        this.#MCEntity = entity;
+    #minecraftEntity: MinecraftServer.Entity;
+
+    constructor(entity: MinecraftServer.Entity) {
+        this.#minecraftEntity = entity;
     }
+
     #CheckValid() {
-        if (!this.#MCEntity.isValid)
+        if (!this.#minecraftEntity.isValid)
             return console.warn(
                 `This Entity (${
-                    this.#MCEntity.id
-                }) is not valid. Make sure that the Entity is valid before invoking any methods.`
+                    this.#minecraftEntity.id
+                }) is not valid. Make sure that the Entity is valid before invoking any methods.`,
             );
     }
+
+    isCachedEntity() {
+        return false;
+    }
+
+    public getNativeHandle(): MinecraftServer.Entity {
+        return this.#minecraftEntity;
+    }
+
     public isPlayer(): boolean {
         try {
-            return this.#MCEntity.typeId == "minecraft:player";
+            return this.#minecraftEntity.typeId == "minecraft:player";
         } catch (error) {
             Teseract.log(error, error.stack);
         }
     }
 
-    public kick(reason?: string) {
+    public getInventory(): Inventory | undefined {
         try {
-            this.#MCPlayer?.runCommand(
-                `kick "${this.#MCPlayer.name}" ${reason}`
+            this.#CheckValid();
+            const inventory = this.#minecraftEntity?.getComponent(
+                "minecraft:inventory",
             );
+            if (!inventory) {
+                return;
+            }
+            return new Inventory(inventory);
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
     }
+
     public getMaxHealth(): number | undefined {
         try {
             this.#CheckValid();
-            return this.#MCEntity.getComponent("minecraft:health")
+            return this.#minecraftEntity.getComponent("minecraft:health")
                 ?.defaultValue;
         } catch (error: any) {
             Teseract.log(error, error.stack);
@@ -53,7 +66,7 @@ export default class Entity {
     public resetHealthToDefault() {
         try {
             this.#CheckValid();
-            return this.#MCEntity
+            return this.#minecraftEntity
                 .getComponent("minecraft:health")
                 ?.resetToMaxValue();
         } catch (error: any) {
@@ -63,7 +76,7 @@ export default class Entity {
     public resetHealthToMinimum() {
         try {
             this.#CheckValid();
-            return this.#MCEntity
+            return this.#minecraftEntity
                 .getComponent("minecraft:health")
                 ?.resetToMaxValue();
         } catch (error: any) {
@@ -73,7 +86,7 @@ export default class Entity {
     public resetHealthToMaximum() {
         try {
             this.#CheckValid();
-            return this.#MCEntity
+            return this.#minecraftEntity
                 .getComponent("minecraft:health")
                 ?.resetToMaxValue();
         } catch (error: any) {
@@ -83,7 +96,7 @@ export default class Entity {
     public getHealth(): number | undefined {
         try {
             this.#CheckValid();
-            return this.#MCEntity.getComponent("minecraft:health")
+            return this.#minecraftEntity.getComponent("minecraft:health")
                 ?.currentValue;
         } catch (error: any) {
             Teseract.log(error, error.stack);
@@ -92,7 +105,7 @@ export default class Entity {
     public setHealth(newHealth: number) {
         try {
             this.#CheckValid();
-            return this.#MCEntity
+            return this.#minecraftEntity
                 .getComponent("minecraft:health")
                 ?.setCurrentValue(newHealth);
         } catch (error: any) {
@@ -100,67 +113,74 @@ export default class Entity {
         }
     }
 
-//     public getInventory(): Inventory | undefined {
-//         try {
-//             this.#CheckValid();
-//             const inventory = this.#MCPlayer?.getComponent(
-//                 "minecraft:inventory"
-//             );
-//             if (!inventory) {
-//                 return;
-//             }
-//             return new Inventory(inventory);
-//         } catch (error: any) {
-//             Teseract.log(error, error.stack);
-//         }
-//     }
+    //     public getInventory(): Inventory | undefined {
+    //         try {
+    //             this.#CheckValid();
+    //             const inventory = this.#minecraftPlayer?.getComponent(
+    //                 "minecraft:inventory"
+    //             );
+    //             if (!inventory) {
+    //                 return;
+    //             }
+    //             return new Inventory(inventory);
+    //         } catch (error: any) {
+    //             Teseract.log(error, error.stack);
+    //         }
+    //     }
 
-//     /*
-//   ################################################
-//   ################ MATIVE METHODS ################
-//   ################################################
-//   */
+    /*
+      ################################################
+      ################ MATIVE METHODS ################
+      ################################################
+      */
 
-//     public addPotionEffect(potionEffect: PotionEffect) {
-//         try {
-//             this.#CheckValid();
-//             let potEffect;
+    public addPotionEffect(potionEffect: PotionEffect) {
+        try {
+            this.#CheckValid();
+            let potEffect;
 
-//             let res = this.#MCEntity.addEffect(
-//                 potionEffect.getType(),
-//                 potionEffect.getDuration(),
-//                 {
-//                     amplifier: potionEffect.getAmplifier(),
-//                     showParticles: potionEffect.showsParticles(),
-//                 }
-//             );
-//             if (res != undefined) {
-//                 potEffect = new PotionEffect(
-//                     res.typeId as PotionEffects,
-//                     res.duration,
-//                     res.amplifier
-//                 );
-//             }
-//             return potEffect;
-//         } catch (error: any) {
-//             Teseract.log(error, error.stack);
-//         }
-//     }
-//     public addPotionEffects(...potionEffects: PotionEffect[]) {
-//         try {
-//             this.#CheckValid();
-//             for (const effect of potionEffects) {
-//                 this.addPotionEffect(effect);
-//             }
-//             return potionEffects;
-//         } catch (error: any) {
-//             Teseract.log(error, error.stack);
-//         }
-//     }
+            let res = this.#minecraftEntity.addEffect(
+                potionEffect.getType(),
+                potionEffect.getDuration(),
+                {
+                    amplifier: potionEffect.getAmplifier(),
+                    showParticles: potionEffect.showsParticles(),
+                },
+            );
+            if (res != undefined) {
+                potEffect = new PotionEffect(
+                    res.typeId as PotionEffects,
+                    res.duration,
+                    res.amplifier,
+                );
+            }
+            return potEffect;
+        } catch (error: any) {
+            Teseract.log(error, error.stack);
+        }
+    }
+
+    public addPotionEffects(...potionEffects: PotionEffect[]): PotionEffect[];
+    public addPotionEffects(potionEffects: PotionEffect[]): PotionEffect[];
+    public addPotionEffects(...potionEffects: any): PotionEffect[] {
+        try {
+            this.#CheckValid();
+            if (Array.isArray(potionEffects[0])) {
+                potionEffects = potionEffects[0];
+            }
+            for (const effect of potionEffects) {
+                this.addPotionEffect(effect);
+            }
+            return potionEffects;
+        } catch (error: any) {
+            Teseract.log(error, error.stack);
+        }
+    }
+
     public addTag(tag: string) {
         try {
             this.#CheckValid();
-            this.#MCEntity.addTag(tag);
+            this.#minecraftEntity.addTag(tag);
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
@@ -169,7 +189,7 @@ export default class Entity {
         try {
             this.#CheckValid();
             for (const tag of tags) {
-                this.#MCEntity.addTag(tag);
+                this.#minecraftEntity.addTag(tag);
             }
         } catch (error: any) {
             Teseract.log(error, error.stack);
@@ -183,10 +203,10 @@ export default class Entity {
     // ) {
     //     try {
     //         this.#CheckValid();
-    //         const P = !!projectile ? projectile.#MCEntity : undefined;
-    //         const D = !!damager ? damager.#MCEntity : undefined;
-    //         this.#MCEntity.applyDamage(damage, {
-    //             cause: cause as unknown as MC.EntityDamageCause,
+    //         const P = !!projectile ? projectile.#minecraftEntity : undefined;
+    //         const D = !!damager ? damager.#minecraftEntity : undefined;
+    //         this.#minecraftEntity.applyDamage(damage, {
+    //             cause: cause as unknown as MinecraftServer.EntityDamageCause,
     //             damagingEntity: D,
     //             damagingProjectile: P,
     //         });
@@ -194,7 +214,7 @@ export default class Entity {
     //         Teseract.log(error, error.stack);
     //     }
     // }
-    public setVelocity(impulse: MC.Vector3 | Location) {
+    public setVelocity(impulse: MinecraftServer.Vector3 | Location) {
         try {
             this.#CheckValid();
             let I;
@@ -203,7 +223,7 @@ export default class Entity {
             } else {
                 I = impulse;
             }
-            this.#MCEntity.applyImpulse(I);
+            this.#minecraftEntity.applyImpulse(I);
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
@@ -212,15 +232,15 @@ export default class Entity {
         DirectionX: number,
         DirectionZ: number,
         ForceXZ: number,
-        ForceY: number
+        ForceY: number,
     ) {
         try {
             this.#CheckValid();
-            this.#MCEntity.applyKnockback(
+            this.#minecraftEntity.applyKnockback(
                 DirectionX,
                 DirectionZ,
                 ForceXZ,
-                ForceY
+                ForceY,
             );
         } catch (error: any) {
             Teseract.log(error, error.stack);
@@ -229,7 +249,7 @@ export default class Entity {
     public clearDynamicProperties() {
         try {
             this.#CheckValid();
-            this.#MCEntity.clearDynamicProperties();
+            this.#minecraftEntity.clearDynamicProperties();
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
@@ -237,7 +257,7 @@ export default class Entity {
     public clearVelocity() {
         try {
             this.#CheckValid();
-            this.#MCEntity.clearVelocity();
+            this.#minecraftEntity.clearVelocity();
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
@@ -246,7 +266,7 @@ export default class Entity {
     public getDimension(): Dimension {
         try {
             this.#CheckValid();
-            return Teseract.getDimension(this.#MCEntity.dimension.id);
+            return Teseract.getDimension(this.#minecraftEntity.dimension.id);
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
@@ -254,7 +274,7 @@ export default class Entity {
     public extinguishFire() {
         try {
             this.#CheckValid();
-            this.#MCEntity.extinguishFire();
+            this.#minecraftEntity.extinguishFire();
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
@@ -262,17 +282,17 @@ export default class Entity {
     public getFallDistance() {
         try {
             this.#CheckValid();
-            return this.#MCEntity.fallDistance;
+            return this.#minecraftEntity.fallDistance;
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
     }
     public getBlockFromViewDirection(
-        config: MC.BlockRaycastOptions
-    ): MC.BlockRaycastHit | undefined {
+        config: MinecraftServer.BlockRaycastOptions,
+    ): MinecraftServer.BlockRaycastHit | undefined {
         try {
             this.#CheckValid();
-            return this.#MCEntity.getBlockFromViewDirection(config);
+            return this.#minecraftEntity.getBlockFromViewDirection(config);
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
@@ -296,11 +316,11 @@ export default class Entity {
         }
     }
     public getDynamicProperty(
-        propertyName: string
-    ): string | number | boolean | MC.Vector3 | undefined {
+        propertyName: string,
+    ): string | number | boolean | MinecraftServer.Vector3 | undefined {
         try {
             this.#CheckValid();
-            return this.#MCEntity.getDynamicProperty(propertyName);
+            return this.#minecraftEntity.getDynamicProperty(propertyName);
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
@@ -308,7 +328,7 @@ export default class Entity {
     public getDynamicPropertyIds(): string[] {
         try {
             this.#CheckValid();
-            return this.#MCEntity.getDynamicPropertyIds();
+            return this.#minecraftEntity.getDynamicPropertyIds();
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
@@ -316,7 +336,7 @@ export default class Entity {
     public getDynamicPropertyTotalByteCount(): number {
         try {
             this.#CheckValid();
-            return this.#MCEntity.getDynamicPropertyTotalByteCount();
+            return this.#minecraftEntity.getDynamicPropertyTotalByteCount();
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
@@ -324,7 +344,7 @@ export default class Entity {
     // public getEffect(potionEffect: PotionEffects): PotionEffect | undefined {
     //     try {
     //         this.#CheckValid();
-    //         const MCEffect = this.#MCEntity.getEffect(potionEffect);
+    //         const MCEffect = this.#minecraftEntity.getEffect(potionEffect);
     //         if (!MCEffect) {
     //             return undefined;
     //         }
@@ -341,7 +361,7 @@ export default class Entity {
     // public getEffects(): PotionEffect[] {
     //     try {
     //         this.#CheckValid();
-    //         const TSEffects = this.#MCEntity.getEffects().map((effect) => {
+    //         const TSEffects = this.#minecraftEntity.getEffects().map((effect) => {
     //             return new PotionEffect(
     //                 effect.typeId as unknown as PotionEffects,
     //                 effect.duration,
@@ -356,7 +376,7 @@ export default class Entity {
     // public getEntitiesFromViewDirection(): EntityRaycastHit[] | undefined {
     //     try {
     //         this.#CheckValid();
-    //         const MCHit = this.#MCEntity.getEntitiesFromViewDirection();
+    //         const MCHit = this.#minecraftEntity.getEntitiesFromViewDirection();
     //         if (!MCHit || MCHit?.length == 0) {
     //             return undefined;
     //         }
@@ -374,26 +394,26 @@ export default class Entity {
     public getHeadLocation(): Location {
         try {
             this.#CheckValid();
-            const vec = this.#MCEntity.getHeadLocation();
+            const vec = this.#minecraftEntity.getHeadLocation();
             return new Location(vec.x, vec.y, vec.z);
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
     }
     public getProperty(
-        propertyName: string
+        propertyName: string,
     ): number | string | boolean | undefined {
         try {
             this.#CheckValid();
-            return this.#MCEntity.getProperty(propertyName);
+            return this.#minecraftEntity.getProperty(propertyName);
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
     }
-    public getRotation(): MC.Vector2 {
+    public getRotation(): MinecraftServer.Vector2 {
         try {
             this.#CheckValid();
-            return this.#MCEntity.getRotation();
+            return this.#minecraftEntity.getRotation();
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
@@ -401,23 +421,23 @@ export default class Entity {
     public getTags(): string[] {
         try {
             this.#CheckValid();
-            return this.#MCEntity.getTags();
+            return this.#minecraftEntity.getTags();
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
     }
-    public getVelocity(): MC.Vector3 {
+    public getVelocity(): MinecraftServer.Vector3 {
         try {
             this.#CheckValid();
-            return this.#MCEntity.getVelocity();
+            return this.#minecraftEntity.getVelocity();
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
     }
-    public getViewVector(): MC.Vector3 {
+    public getViewVector(): MinecraftServer.Vector3 {
         try {
             this.#CheckValid();
-            return this.#MCEntity.getViewDirection();
+            return this.#minecraftEntity.getViewDirection();
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
@@ -425,7 +445,7 @@ export default class Entity {
     public hasAttribute(attributeName: string): boolean {
         try {
             this.#CheckValid();
-            return this.#MCEntity.hasComponent(attributeName);
+            return this.#minecraftEntity.hasComponent(attributeName);
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
@@ -433,14 +453,14 @@ export default class Entity {
     public hasTag(tagName: string): boolean {
         try {
             this.#CheckValid();
-            return this.#MCEntity.hasTag(tagName);
+            return this.#minecraftEntity.hasTag(tagName);
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
     }
     public getUUID(): string {
         try {
-            return this.#MCEntity.id;
+            return this.#minecraftEntity.id;
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
@@ -448,7 +468,7 @@ export default class Entity {
     public isClimbing(): boolean {
         try {
             this.#CheckValid();
-            return this.#MCEntity.isClimbing;
+            return this.#minecraftEntity.isClimbing;
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
@@ -456,7 +476,7 @@ export default class Entity {
     public isFalling(): boolean {
         try {
             this.#CheckValid();
-            return this.#MCEntity.isFalling;
+            return this.#minecraftEntity.isFalling;
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
@@ -464,7 +484,7 @@ export default class Entity {
     public isInWater(): boolean {
         try {
             this.#CheckValid();
-            return this.#MCEntity.isInWater;
+            return this.#minecraftEntity.isInWater;
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
@@ -472,7 +492,7 @@ export default class Entity {
     public isOnGround(): boolean {
         try {
             this.#CheckValid();
-            return this.#MCEntity.isOnGround;
+            return this.#minecraftEntity.isOnGround;
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
@@ -480,7 +500,7 @@ export default class Entity {
     public isSleeping(): boolean {
         try {
             this.#CheckValid();
-            return this.#MCEntity.isSleeping;
+            return this.#minecraftEntity.isSleeping;
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
@@ -488,7 +508,7 @@ export default class Entity {
     public isSneaking(): boolean {
         try {
             this.#CheckValid();
-            return this.#MCEntity.isSneaking;
+            return this.#minecraftEntity.isSneaking;
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
@@ -496,7 +516,7 @@ export default class Entity {
     public isSprinting(): boolean {
         try {
             this.#CheckValid();
-            return this.#MCEntity.isSprinting;
+            return this.#minecraftEntity.isSprinting;
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
@@ -504,14 +524,14 @@ export default class Entity {
     public isSwimming(): boolean {
         try {
             this.#CheckValid();
-            return this.#MCEntity.isSwimming;
+            return this.#minecraftEntity.isSwimming;
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
     }
     public isValid(): boolean {
         try {
-            return this.#MCEntity.isValid();
+            return this.#minecraftEntity.isValid();
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
@@ -519,15 +539,15 @@ export default class Entity {
     public kill(): boolean {
         try {
             this.#CheckValid();
-            return this.#MCEntity.kill();
+            return this.#minecraftEntity.kill();
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
     }
-    public getLifetimeState(): MC.EntityLifetimeState {
+    public getLifetimeState(): MinecraftServer.EntityLifetimeState {
         try {
             this.#CheckValid();
-            return this.#MCEntity.lifetimeState;
+            return this.#minecraftEntity.lifetimeState;
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
@@ -535,16 +555,16 @@ export default class Entity {
     public getLocation(): Location {
         try {
             this.#CheckValid();
-            const loc = this.#MCEntity.location;
+            const loc = this.#minecraftEntity.location;
             return new Location(loc.x, loc.y, loc.z);
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
     }
-    public matches(matcher: MC.EntityQueryOptions): boolean {
+    public matches(matcher: MinecraftServer.EntityQueryOptions): boolean {
         try {
             this.#CheckValid();
-            return this.#MCEntity.matches(matcher);
+            return this.#minecraftEntity.matches(matcher);
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
@@ -552,7 +572,7 @@ export default class Entity {
     public getDisplayName(): string {
         try {
             this.#CheckValid();
-            return this.#MCEntity.nameTag;
+            return this.#minecraftEntity.nameTag;
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
@@ -560,25 +580,25 @@ export default class Entity {
     public setDisplayName(displayName: string): void {
         try {
             this.#CheckValid();
-            this.#MCEntity.nameTag = displayName;
+            this.#minecraftEntity.nameTag = displayName;
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
     }
     public playAnimation(
         animation: string,
-        config?: MC.PlayAnimationOptions
+        config?: MinecraftServer.PlayAnimationOptions,
     ): void {
         try {
             this.#CheckValid();
-            this.#MCEntity.playAnimation(animation, config);
+            this.#minecraftEntity.playAnimation(animation, config);
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
     }
     public remove() {
         try {
-            this.#MCEntity.remove();
+            this.#minecraftEntity.remove();
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
@@ -586,8 +606,8 @@ export default class Entity {
     // public removePotionEffect(effectType: PotionEffects): boolean {
     //     try {
     //         this.#CheckValid();
-    //         return this.#MCEntity.removeEffect(
-    //             effectType as unknown as MC.EffectType
+    //         return this.#minecraftEntity.removeEffect(
+    //             effectType as unknown as MinecraftServer.EffectType
     //         );
     //     } catch (error: any) {
     //         Teseract.log(error, error.stack);
@@ -596,7 +616,7 @@ export default class Entity {
     public removeTag(tagName: string): boolean {
         try {
             this.#CheckValid();
-            return this.#MCEntity.removeTag(tagName);
+            return this.#minecraftEntity.removeTag(tagName);
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
@@ -606,8 +626,8 @@ export default class Entity {
             this.#CheckValid();
             let successCount = 0;
             for (const tag of tags) {
-                if (this.#MCEntity.hasTag(tag)) {
-                    this.#MCEntity.removeTag(tag);
+                if (this.#minecraftEntity.hasTag(tag)) {
+                    this.#minecraftEntity.removeTag(tag);
                     successCount++;
                 }
             }
@@ -617,48 +637,58 @@ export default class Entity {
         }
     }
     public resetProperty(
-        propertyName: string
+        propertyName: string,
     ): string | number | undefined | boolean {
         try {
             this.#CheckValid();
-            return this.#MCEntity.resetProperty(propertyName);
+            return this.#minecraftEntity.resetProperty(propertyName);
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
     }
-    public runCommand(command: string): MC.CommandError | MC.CommandResult {
+    public runCommand(
+        command: string,
+    ): MinecraftServer.CommandError | MinecraftServer.CommandResult {
         try {
             this.#CheckValid();
-            return this.#MCEntity.runCommand(command);
+            return this.#minecraftEntity.runCommand(command);
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
     }
     public async runCommandAsync(
-        command: string
-    ): Promise<MC.CommandError | MC.CommandResult> {
+        command: string,
+    ): Promise<MinecraftServer.CommandError | MinecraftServer.CommandResult> {
         try {
             this.#CheckValid();
-            return this.#MCEntity.runCommandAsync(command);
+            return this.#minecraftEntity.runCommandAsync(command);
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
     }
-    public getScoreboard(): MC.ScoreboardIdentity | undefined {
+    public getScoreboard(): MinecraftServer.ScoreboardIdentity | undefined {
         try {
             this.#CheckValid();
-            return this.#MCEntity.scoreboardIdentity;
+            return this.#minecraftEntity.scoreboardIdentity;
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
     }
     public setDynamicProperty(
         propertyName: string,
-        propertyValue: string | number | boolean | undefined | MC.Vector3
+        propertyValue:
+            | string
+            | number
+            | boolean
+            | undefined
+            | MinecraftServer.Vector3,
     ): void {
         try {
             this.#CheckValid();
-            this.#MCEntity.setDynamicProperty(propertyName, propertyValue);
+            this.#minecraftEntity.setDynamicProperty(
+                propertyName,
+                propertyValue,
+            );
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
@@ -666,26 +696,26 @@ export default class Entity {
     public setOnFire(duration: number, useEffects?: boolean): boolean {
         try {
             this.#CheckValid();
-            return this.#MCEntity.setOnFire(duration, useEffects);
+            return this.#minecraftEntity.setOnFire(duration, useEffects);
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
     }
     public setProperty(
         propertyName: string,
-        propertyValue: string | number | boolean
+        propertyValue: string | number | boolean,
     ): void {
         try {
             this.#CheckValid();
-            this.#MCEntity.setProperty(propertyName, propertyValue);
+            this.#minecraftEntity.setProperty(propertyName, propertyValue);
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
     }
-    public setRotation(newRotation: MC.Vector2): void {
+    public setRotation(newRotation: MinecraftServer.Vector2): void {
         try {
             this.#CheckValid();
-            this.#MCEntity.setRotation(newRotation);
+            this.#minecraftEntity.setRotation(newRotation);
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
@@ -693,17 +723,17 @@ export default class Entity {
     public getTarget(): Entity | undefined {
         try {
             this.#CheckValid();
-            if (!this.#MCEntity?.target) {
+            if (!this.#minecraftEntity?.target) {
                 return undefined;
             }
-            return new Entity(this.#MCEntity?.target);
+            return new Entity(this.#minecraftEntity?.target);
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
     }
     // public teleport(
     //     newLocation: Location | DimensionLocation,
-    //     rotation?: MC.Vector2,
+    //     rotation?: MinecraftServer.Vector2,
     //     checkForBlocks?: boolean,
     //     dimension?: Dimension,
     //     facingLocation?: Location,
@@ -714,9 +744,9 @@ export default class Entity {
     //         if (newLocation instanceof DimensionLocation) {
     //             dimension = newLocation.getDimension();
     //         }
-    //         this.#MCEntity.teleport(newLocation.getVector(), {
+    //         this.#minecraftEntity.teleport(newLocation.getVector(), {
     //             checkForBlocks: checkForBlocks,
-    //             dimension: MC.world.getDimension(
+    //             dimension: MinecraftServer.world.getDimension(
     //                 dimension?.getName() ?? "minecraft:overworld"
     //             ),
     //             facingLocation: facingLocation?.getVector(),
@@ -730,14 +760,14 @@ export default class Entity {
     public triggerEvent(eventName: string): void {
         try {
             this.#CheckValid();
-            this.#MCEntity.triggerEvent(eventName);
+            this.#minecraftEntity.triggerEvent(eventName);
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }
     }
     // public tryTeleport(
     //     newLocation: Location,
-    //     rotation: MC.Vector2,
+    //     rotation: MinecraftServer.Vector2,
     //     checkForBlocks: boolean,
     //     dimension: Dimension,
     //     facingLocation: Location,
@@ -745,9 +775,9 @@ export default class Entity {
     // ): boolean {
     //     try {
     //         this.#CheckValid();
-    //         return this.#MCEntity.tryTeleport(newLocation.getVector(), {
+    //         return this.#minecraftEntity.tryTeleport(newLocation.getVector(), {
     //             checkForBlocks: checkForBlocks,
-    //             dimension: MC.world.getDimension(dimension.getName()),
+    //             dimension: MinecraftServer.world.getDimension(dimension.getName()),
     //             facingLocation: facingLocation.getVector(),
     //             keepVelocity: keepVelocity,
     //             rotation: rotation,
@@ -759,7 +789,7 @@ export default class Entity {
     public getTypeId(): string {
         try {
             this.#CheckValid();
-            return this.#MCEntity.typeId;
+            return this.#minecraftEntity.typeId;
         } catch (error: any) {
             Teseract.log(error, error.stack);
         }

@@ -42,6 +42,9 @@ enum Events {
     "PressurePlatePopEvent" = "PressurePlatePopEvent",
     "TargetBlockHitEvent" = "TargetBlockHitEvent",
     "TripWireTripEvent" = "TripWireTripEvent",
+    // Custom events
+    "PlayerDieEvent" = "PlayerDieEvent",
+    "PlayerPostmortalEvent" = "PlayerPostmortalEvent"
 }
 
-export default Events
+export default Events;

@@ -11,6 +11,7 @@ export default class ItemStack {
         if (itemType instanceof MinecraftServer.ItemStack) {
             this.#minecraft_itemstack = itemType;
         } else {
+            console.warn(itemType)
             this.#minecraft_itemstack = new MinecraftServer.ItemStack(
                 itemType,
                 amount ?? 1
@@ -92,7 +93,7 @@ export default class ItemStack {
             Teseract.log(error, error.stack);
         }
     }
-    public getTypeId(): ItemMaterial {
+    public getTypeId(): ItemMaterial | string {
         try {
             return this.#minecraft_itemstack.typeId as ItemMaterial;
         } catch (error: any) {
@@ -107,7 +108,7 @@ export default class ItemStack {
             Teseract.log(error, error.stack);
         }
     }
-    public cloneNativeItemStack(): MinecraftServer.ItemStack {
+    public getNativeHandle(): MinecraftServer.ItemStack {
         try {
             return this.#minecraft_itemstack.clone();
         } catch (error: any) {

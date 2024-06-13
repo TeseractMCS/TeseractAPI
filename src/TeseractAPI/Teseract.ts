@@ -352,11 +352,12 @@ export default abstract class Teseract {
     }
 }
 
-MinecraftServer.world.beforeEvents.worldInitialize.subscribe((arg) => {
+MinecraftServer.world.beforeEvents.worldInitialize.subscribe(async (arg) => {
     const ComponentRegistry = new CustomComponentRegistry(
         arg.itemComponentRegistry,
         arg.blockTypeRegistry
     );
+    await null;
     for (const plugin of Plugins) {
         plugin.pluginInstance.onEnabled(ComponentRegistry);
     }

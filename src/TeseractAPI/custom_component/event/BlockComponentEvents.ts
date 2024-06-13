@@ -15,12 +15,13 @@ import {
     system,
 } from "@minecraft/server";
 import * as MinecraftServer from "@minecraft/server";
-import Block from "TeseractAPI/Block";
+import Block from "TeseractAPI/block/Block";
 import Dimension from "TeseractAPI/Dimension";
 import DimensionLocation from "TeseractAPI/DimensionLocation";
 import Teseract from "TeseractAPI/Teseract";
 import Entity from "TeseractAPI/entity/Entity";
 import Player from "TeseractAPI/entity/Player";
+import BlockPermutation from "TeseractAPI/block/BlockPermutation";
 
 function DataEntity(entity: MinecraftServer.Entity | undefined) {
     return entity ? new Entity(entity) : undefined;
@@ -111,9 +112,9 @@ export class BlockComponentOnPlaceEvent extends BlockEvent {
      * @remarks
      * Previous block permutation before placement.
      */
-    public getPreviousBlock(): MinecraftServer.BlockPermutation {
+    public getPreviousBlock(): BlockPermutation {
         try {
-            return this.#minecraft_data.previous_block;
+            return new BlockPermutation(this.#minecraft_data.previous_block);
         } catch (error) {
             Teseract.log(error, error.stack);
         }
@@ -138,9 +139,11 @@ export class BlockComponentPlayerDestroyEvent extends BlockEvent {
      * @remarks
      * Block permutation that was destroyed.
      */
-    public getDestroyedBlockPermutation(): MinecraftServer.BlockPermutation {
+    public getDestroyedBlockPermutation(): BlockPermutation {
         try {
-            return this.#minecraft_data.destroyedBlockPermutation;
+            return new BlockPermutation(
+                this.#minecraft_data.destroyedBlockPermutation
+            );
         } catch (error) {
             Teseract.log(error, error.stack);
         }
@@ -264,7 +267,9 @@ export class BlockComponentPlayerPlaceBeforeEvent extends BlockEvent {
      */
     public getPermutationToPlace() {
         try {
-            return this.#minecraft_data.permutationToPlace;
+            return new BlockPermutation(
+                this.#minecraft_data.permutationToPlace
+            );
         } catch (error) {
             Teseract.log(error, error.stack);
         }

@@ -7,7 +7,7 @@ import ItemStopUseOnEvent from "../item/ItemStopUseOnEvent";
 import ItemUseEvent from "../item/ItemUseEvent";
 import ItemUseOnEvent from "../item/ItemUseOnEvent";
 
-const ItemEventMapping = {
+const ItemEventsMapping = {
     ItemCompleteUseEvent: ItemCompleteUseEvent,
     ItemReleaseUseEvent: ItemReleaseUseEvent,
     ItemStartUseEvent: ItemStartUseEvent,
@@ -18,4 +18,4 @@ const ItemEventMapping = {
     ItemUseOnEvent: ItemUseOnEvent,
 };
 
-export default ItemEventMapping;
+export default ItemEventsMapping;
