@@ -7,9 +7,8 @@ import Entity from "TeseractAPI/entity/Entity";
 import NativeParserUtil from "TeseractAPI/util/NativeLocationParser";
 import EntityCache from "TeseractAPI/entity/EntityCache";
 import EventManager from "../EventManager";
-import CachedEntity, {
-    CachedVanillaEntity,
-} from "TeseractAPI/entity/CachedEntity";
+import CachedEntity from "TeseractAPI/entity/CachedEntity";
+import CachedVanillaEntity from "TeseractAPI/entity/VanillaCachedEntity";
 
 function parseKillerName(name: string): string {
     if (name == undefined) {
@@ -29,168 +28,184 @@ function parseKillerName(name: string): string {
 
 export default class PlayerPostmortalEvent extends PlayerCancellableEventBase {
     public static customDispatcher() {
-        MinecraftServer.world.afterEvents.entityHurt.subscribe((arg) => {
-            try {
-                const {
-                    hurtEntity: _player,
-                    damage: _damage,
-                    damageSource: _damageSource,
-                } = arg;
+        try {
+            MinecraftServer.world.afterEvents.entityHurt.subscribe((arg) => {
+                try {
+                    const {
+                        hurtEntity: _player,
+                        damage: _damage,
+                        damageSource: _damageSource,
+                    } = arg;
 
-                if (_damage > 0 || _damageSource.cause !== "none") {
-                    return;
-                }
-
-                const entityHurt = MinecraftServer.world.afterEvents.entityHurt;
-
-                const data = entityHurt.subscribe((originalData) => {
-                    const { hurtEntity, damageSource } = originalData;
-
-                    const player = hurtEntity as MinecraftServer.Player;
-
-                    let damagerWasValid = true;
-
-                    if (
-                        player.id != _player.id ||
-                        damageSource.cause == "none"
-                    ) {
+                    if (_damage > 0 || _damageSource.cause !== "none") {
                         return;
                     }
 
-                    //@ts-ignore
-                    let damagingEntity =
-                        damageSource.cause == "entityExplosion"
-                            ? EntityCache.native.get(
-                                  damageSource.damagingEntity?.id,
-                              )
-                            : damageSource.damagingEntity;
+                    const entityHurt =
+                        MinecraftServer.world.afterEvents.entityHurt;
 
-                    const killer =
-                        (damagingEntity?.nameTag == ""
-                            ? (damagingEntity as MinecraftServer.Player)?.name
-                            : damagingEntity?.nameTag) ??
-                        parseKillerName(damagingEntity?.typeId);
+                    const data = entityHurt.subscribe((originalData) => {
+                        const { hurtEntity, damageSource } = originalData;
 
-                    const newDamageSource: MinecraftServer.EntityDamageSource =
-                        {
-                            cause: damageSource.cause,
-                            damagingEntity: damageSource.damagingEntity,
-                        };
+                        const player = hurtEntity as MinecraftServer.Player;
 
-                    let cachedDamager;
+                        let damagerWasValid = true;
 
-                    if (!damageSource.damagingEntity?.isValid()) {
-                        damagerWasValid = false;
                         if (
-                            damageSource.cause ==
-                            MinecraftServer.EntityDamageCause.entityExplosion
+                            player.id != _player.id ||
+                            damageSource.cause == "none"
                         ) {
-                            cachedDamager = EntityCache.native.get(
-                                damageSource.damagingEntity.id,
-                            );
+                            return;
                         }
-                    }
 
-                    const eventData = new PlayerPostmortalEvent({
-                        hurtEntity: player,
-                        damageSource: {
-                            damagingEntity: damagerWasValid
-                                ? damageSource.damagingEntity
-                                : cachedDamager,
-                            damagingProjectile: damageSource.damagingProjectile,
-                            cause: damageSource.cause,
-                        },
-                    });
+                        //@ts-ignore
+                        let damagingEntity =
+                            damageSource.cause == "entityExplosion"
+                                ? EntityCache.native.get(
+                                      damageSource.damagingEntity?.id,
+                                  )
+                                : damageSource.damagingEntity;
 
-                    EventManager.getInstance().dispatchEvent(
-                        "PlayerPostmortalEvent",
-                        eventData,
-                    );
+                        const killer =
+                            (damagingEntity?.nameTag == ""
+                                ? (damagingEntity as MinecraftServer.Player)
+                                      ?.name
+                                : damagingEntity?.nameTag) ??
+                            parseKillerName(damagingEntity?.typeId);
 
-                    MinecraftServer.world.afterEvents.entityHurt.unsubscribe(
-                        data,
-                    );
+                        const newDamageSource: MinecraftServer.EntityDamageSource =
+                            {
+                                cause: damageSource.cause,
+                                damagingEntity: damageSource.damagingEntity,
+                            };
 
-                    if (!eventData.isCanceled()) {
-                        return;
-                    }
+                        let cachedDamager;
 
-                    const equipment = player.getComponent("equippable");
-
-                    const mainHand = equipment.getEquipmentSlot(
-                        MinecraftServer.EquipmentSlot.Mainhand,
-                    );
-                    const offHand = equipment.getEquipmentSlot(
-                        MinecraftServer.EquipmentSlot.Offhand,
-                    );
-
-                    const mainItem = mainHand.getItem();
-                    const offItem = offHand.getItem();
-
-                    if (
-                        mainHand.getItem()?.typeId ==
-                        "minecraft:totem_of_undying"
-                    ) {
-                        if (!MinecraftServer.world.gameRules.keepInventory) {
-                            player.dimension.spawnItem(
-                                mainItem,
-                                player.location,
-                            );
+                        if (!damageSource.damagingEntity?.isValid()) {
+                            damagerWasValid = false;
+                            if (
+                                damageSource.cause ==
+                                MinecraftServer.EntityDamageCause
+                                    .entityExplosion
+                            ) {
+                                cachedDamager = EntityCache.native.get(
+                                    damageSource.damagingEntity.id,
+                                );
+                            }
                         }
-                        mainHand.setItem();
-                    }
 
-                    if (
-                        offHand.getItem()?.typeId ==
-                        "minecraft:totem_of_undying"
-                    ) {
-                        if (!MinecraftServer.world.gameRules.keepInventory) {
-                            player.dimension.spawnItem(
-                                offItem,
-                                player.location,
-                            );
-                        }
-                        offHand.setItem();
-                    }
+                        const eventData = new PlayerPostmortalEvent({
+                            hurtEntity: player,
+                            damageSource: {
+                                damagingEntity: damagerWasValid
+                                    ? damageSource.damagingEntity
+                                    : cachedDamager,
+                                damagingProjectile:
+                                    damageSource.damagingProjectile,
+                                cause: damageSource.cause,
+                            },
+                        });
 
-                    if (!damagerWasValid) {
-                        const damager = player.dimension.spawnEntity(
-                            cachedDamager.typeId,
-                            player.location,
+                        EventManager.getInstance().dispatchEvent(
+                            "PlayerPostmortalEvent",
+                            eventData,
                         );
 
-                        damager.addEffect("invisibility", 20000000);
-                        damager.nameTag = cachedDamager.nameTag;
+                        console.warn(eventData.isCanceled());
 
-                        newDamageSource.damagingEntity = damager;
-                    }
+                        MinecraftServer.world.afterEvents.entityHurt.unsubscribe(
+                            data,
+                        );
 
-                    function forcePlayerDeath() {
-                        if (player.getComponent("health").currentValue > 0) {
-                            player.applyDamage(99999, newDamageSource);
-                            forcePlayerDeath();
+                        if (!eventData.isCanceled()) {
+                            return;
                         }
-                    }
 
-                    for (const effect of player.getEffects()) {
-                        player.removeEffect(effect.typeId);
-                    }
+                        const equipment = player.getComponent("equippable");
 
-                    forcePlayerDeath();
+                        const mainHand = equipment.getEquipmentSlot(
+                            MinecraftServer.EquipmentSlot.Mainhand,
+                        );
+                        const offHand = equipment.getEquipmentSlot(
+                            MinecraftServer.EquipmentSlot.Offhand,
+                        );
 
-                    if (!damagerWasValid) {
-                        newDamageSource.damagingEntity?.remove();
-                    }
+                        const mainItem = mainHand.getItem();
+                        const offItem = offHand.getItem();
 
-                    if (MinecraftServer.world.gameRules.keepInventory) {
-                        mainHand.setItem(mainItem);
-                        offHand.setItem(offItem);
-                    }
-                });
-            } catch (error) {
-                console.warn(error, error.stack);
-            }
-        });
+                        if (
+                            mainHand.getItem()?.typeId ==
+                            "minecraft:totem_of_undying"
+                        ) {
+                            if (
+                                !MinecraftServer.world.gameRules.keepInventory
+                            ) {
+                                player.dimension.spawnItem(
+                                    mainItem,
+                                    player.location,
+                                );
+                            }
+                            mainHand.setItem();
+                        }
+
+                        if (
+                            offHand.getItem()?.typeId ==
+                            "minecraft:totem_of_undying"
+                        ) {
+                            if (
+                                !MinecraftServer.world.gameRules.keepInventory
+                            ) {
+                                player.dimension.spawnItem(
+                                    offItem,
+                                    player.location,
+                                );
+                            }
+                            offHand.setItem();
+                        }
+
+                        if (!damagerWasValid) {
+                            const damager = player.dimension.spawnEntity(
+                                cachedDamager.typeId,
+                                player.location,
+                            );
+
+                            damager.addEffect("invisibility", 20000000);
+                            damager.nameTag = cachedDamager.nameTag;
+
+                            newDamageSource.damagingEntity = damager;
+                        }
+
+                        function forcePlayerDeath() {
+                            if (
+                                player.getComponent("health").currentValue > 0
+                            ) {
+                                player.applyDamage(99999, newDamageSource);
+                                forcePlayerDeath();
+                            }
+                        }
+
+                        for (const effect of player.getEffects()) {
+                            player.removeEffect(effect.typeId);
+                        }
+
+                        forcePlayerDeath();
+
+                        if (!damagerWasValid) {
+                            newDamageSource.damagingEntity?.remove();
+                        }
+
+                        if (MinecraftServer.world.gameRules.keepInventory) {
+                            mainHand.setItem(mainItem);
+                            offHand.setItem(offItem);
+                        }
+                    });
+                } catch (error) {
+                    console.warn(error, error.stack);
+                }
+            });
+        } catch (error) {
+            Teseract.log(error, error.stack);
+        }
     }
 
     #damageSource: {
@@ -210,8 +225,8 @@ export default class PlayerPostmortalEvent extends PlayerCancellableEventBase {
         super({ player: data.hurtEntity });
         this.#damageSource = {
             damagingEntity:
-                data.damageSource.damagingEntity instanceof CachedEntity
-                    ? data.damageSource.damagingEntity
+                data.damageSource.damagingEntity instanceof CachedVanillaEntity
+                    ? new CachedEntity(data.damageSource.damagingEntity)
                     : NativeParserUtil.NativeOptionalEntity(
                           data.damageSource.damagingEntity,
                       ),
@@ -238,6 +253,8 @@ export default class PlayerPostmortalEvent extends PlayerCancellableEventBase {
     /**
      * @remarks
      * Retrieves the entity that caused the damage.
+     * @remarks
+     * The damager can be a valid instance of {@link Entity} or a {@link CachedEntity} instance. The damager will be a CachedEntity if it wasn't valid during the postmortal activation.  
      * @returns The entity that caused the damage, or undefined if not available.
      */
     public getDamager(): Entity | CachedEntity {
