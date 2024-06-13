@@ -1,6 +1,6 @@
 
 # TeseractAPI
-
+<img src="pack_icon.png" width="400px" />
 TeseractAPI is an advanced Minecraft Bedrock Edition scripting API designed to simplify custom event handling, entity management, and form interactions. Built on top of the official Minecraft Bedrock scripting API, it offers a robust and extensible framework for developers.
 
 ## Features
