@@ -1,9 +1,9 @@
 {
-  "name": "scripting-starter",
-  "version": "0.1.0",
-  "productName": "Teseract UHC",
-  "description": "Teseract UHC",
-  "private": true,
+  "name": "teseract_api",
+  "version": "1.0.0",
+  "productName": "Teseract API",
+  "description": "Teseract API",
+  "private": false,
   "devDependencies": {
     "del": "^6.0.0",
     "glob": "^10.4.1",

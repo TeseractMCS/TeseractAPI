@@ -1,8 +1,8 @@
 {
     "format_version": 2,
     "header": {
-        "name": "§c§l[BP]§r §cTeseract UHC V2",
-        "description": "Version 2. By NxmbersCib.",
+        "name": "§c§l[BP]§r §cTeseract API Testing",
+        "description": "Refactored TeseractAPI testing. By NxmbersCib & TeseractMCS.",
         "uuid": "79587552-f454-4cee-855e-652b7675c507",
         "version": [2, 2, 0],
         "min_engine_version": [1, 20, 80]
