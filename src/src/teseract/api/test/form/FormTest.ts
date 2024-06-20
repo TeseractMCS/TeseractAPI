@@ -1,29 +1,20 @@
-import Player from "TeseractAPI/entity/Player";
-import Response from "TeseractAPI/form/Response";
-import {
-    buttonForm,
-    choiceForm,
-    firstChoice,
-    formBody,
-    formButton,
-    formTitle,
-    messageForm,
-    secondChoice,
-} from "TeseractAPI/form/data/Form";
-@buttonForm()
+import Player from "@teseract/api/entity/Player";
+import Response from "@teseract/api/ui/Response";
+import Form from "@teseract/api/ui/Form";
+@Form.Action()
 export class ButtonForm {
-    @formTitle()
+    @Form.title()
     title = "Form Title";
 
-    @formBody()
+    @Form.body()
     body = "Form Body";
-    @formButton()
+    @Form.button("boton 1")
     button1(player: Player) {
         player.sendMessage("Seleccionaste el boton 1 mi bro");
         this.bindTest(player);
     }
 
-    @formButton()
+    @Form.button("suicidarse")
     suicidarse(player: Player) {
         player.sendMessage("Seleccionaste el boton de suicidio mi bro");
         player.kill();
@@ -34,30 +25,30 @@ export class ButtonForm {
     }
 }
 
-@choiceForm()
-export class ChoiceForm {
-    @formTitle()
-    title = "Form Title";
+// @Form.Message()
+// export class ChoiceForm {
+//     @Form.title()
+//     title = "Form Title";
 
-    @formBody()
-    body = "Form Body";
+//     @Form.body()
+//     body = "Form Body";
 
-    @firstChoice()
-    choice1(player: Player) {
-        player.sendMessage("You made a choice: 1")
-    }
+//     @F()
+//     choice1(player: Player) {
+//         player.sendMessage("You made a choice: 1")
+//     }
 
-    @secondChoice()
-    choice2(player: Player) {
-        player.sendMessage("You made a choice: 2")
-    }
-}
+//     @secondChoice()
+//     choice2(player: Player) {
+//         player.sendMessage("You made a choice: 2")
+//     }
+// }
 
-@messageForm()
-export class MessageForm {
-    @formTitle()
-    title = "Message Title";
+// @messageForm()
+// export class MessageForm {
+//     @formTitle()
+//     title = "Message Title";
 
-    @formBody()
-    body = "This is a message form";
-}
+//     @formBody()
+//     body = "This is a message form";
+// }

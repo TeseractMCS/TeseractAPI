@@ -1,0 +1,7 @@
+{
+    // "typescript.suggest.autoImports": true,
+    "typescript.preferences.autoImportFileExcludePatterns": [
+        "@minecraft/server"
+    ]
+    // "typescript.suggest.paths": 
+}

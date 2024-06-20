@@ -1,23 +1,42 @@
-import Teseract from "TeseractAPI/Teseract";
-import { ItemCustomComponent } from "TeseractAPI/custom_component/ItemCustomComponent";
-import { ItemComponentConsumeEvent, ItemComponentUseEvent } from "TeseractAPI/custom_component/event/ItemComponentEvents";
-import PotionEffect from "TeseractAPI/potion/PotionEffect";
-import PotionEffects from "TeseractAPI/potion/PotionEffects";
-export default class GoldenHeadComponent extends ItemCustomComponent {
-    override onConsume = (arg: ItemComponentConsumeEvent) => {
-        const player = arg.getPlayer();
+import Teseract from "@teseract/api/Teseract";
+import Player from "@teseract/api/entity/Player";
+import { ItemCustomComponent } from "@teseract/api/custom_component/ItemCustomComponent";
+import {
+    ItemComponentConsumeEvent,
+    ItemComponentHitEntityEvent,
+    ItemComponentUseEvent,
+} from "@teseract/api/custom_component/event/ItemComponentEvents";
 
-        const headEffects = [
-            new PotionEffect(PotionEffects.ABSORPTION, 20 * 120, 1),
-            new PotionEffect(PotionEffects.REGENERATION, 20 * 10, 1),
-        ];
-
-        player.addPotionEffects(headEffects);
+export default class MyItemComponent extends ItemCustomComponent {
+    override onConsume = (event: ItemComponentConsumeEvent) => {
+        console.warn("consume")
+        if (!event.getEntity().isPlayer()) {
+            return;
+        }
+        const player = event.getEntity() as Player;
+        console.warn(player.getTypeId())
+        player.sendMessage(`You consumed ${event.getItemStack().getTypeId()}`);
     };
-    override onUse = (arg: ItemComponentUseEvent) => {
-        const player = arg.getPlayer();
-        const itemStack = arg.getItemStack();
 
-        player.sendMessage("Used: " + itemStack.getTypeId());
+    override onUse = (event: ItemComponentUseEvent) => {
+        console.warn("use")
+        const player = event.getPlayer();
+
+        player.sendMessage(`You used ${event.getItemStack().getTypeId()}`);
+    };
+
+    override onHitEntity = (event: ItemComponentHitEntityEvent) => {
+        console.warn("hit")
+        if (!event.getAttackingEntity().isPlayer()) {
+            return;
+        }
+
+        const player = event.getAttackingEntity() as Player;
+
+        player.sendMessage(
+            `You hit ${event.getHitEntity().getTypeId()} with ${event
+                .getItemStack()
+                .getTypeId()}`,
+        );
     };
 }

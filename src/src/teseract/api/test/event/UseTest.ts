@@ -1,32 +1,42 @@
-import { ItemCustomComponent } from "TeseractAPI/custom_component/ItemCustomComponent";
-import { ItemComponentConsumeEvent } from "TeseractAPI/custom_component/event/ItemComponentEvents";
-import eventListener from "TeseractAPI/event/EventListener";
-import Events from "TeseractAPI/event/Events";
-import ItemUseEvent from "TeseractAPI/event/item/ItemUseEvent";
-import ItemUseOnEvent from "TeseractAPI/event/item/ItemUseOnEvent";
+import { ItemCustomComponent } from "@teseract/api/custom_component/ItemCustomComponent";
+import {
+    ItemComponentConsumeEvent,
+    ItemComponentHitEntityEvent,
+    ItemComponentUseEvent,
+} from "@teseract/api/custom_component/event/ItemComponentEvents";
+import Player from "@teseract/api/entity/Player";
+import eventListener from "@teseract/api/event/EventListener";
+import Events from "@teseract/api/event/Events";
+import ItemUseEvent from "@teseract/api/event/item/ItemUseEvent";
+import ItemUseOnEvent from "@teseract/api/event/item/ItemUseOnEvent";
 
 export default class UseTest extends ItemCustomComponent {
-    override onConsume = (arg: ItemComponentConsumeEvent) => {
-        arg.getPlayer().sendMessage("Te tragaste una golden jed")
-    }; 
-    @eventListener(Events.ItemUseEvent)
-    onUsed(event: ItemUseEvent) {
+    override onConsume = (event: ItemComponentConsumeEvent) => {
+        if (!event.getEntity().isPlayer()) {
+            return;
+        }
+        const player = event.getEntity() as Player;
+
+        player.sendMessage(`You consumed ${event.getItemStack().getTypeId()}`);
+    };
+
+    override onUse = (event: ItemComponentUseEvent) => {
         const player = event.getPlayer();
+
         if (event.getItemStack().getTypeId() != "minecraft:stick") {
             return;
         }
-        player.sendMessage("Wadejeeel usaste un palo xdxd ahora metetelo por-");
-    }
 
-    @eventListener("ItemUseOnEvent")
-    async onUsedOn(event: ItemUseOnEvent) {
-        const player = event.getPlayer();
-        if (event.getItemStack().getTypeId() != "minecraft:iron_hoe") {
+        player.sendMessage(`You consumed ${event.getItemStack().getTypeId()}`);
+    };
+
+    override onHitEntity = (event: ItemComponentHitEntityEvent) => {
+        if (!event.getAttackingEntity().isPlayer()) {
             return;
         }
-        player.sendMessage("Has usado una azada!! Te voy a quemar.");
-        event.setCanceled(true)
-        await event.privileges();
-        player.setOnFire(20)
-    }
+
+        const player = event.getAttackingEntity() as Player;
+
+        player.sendMessage(`You hit ${event.getHitEntity().getTypeId()} with ${event.getItemStack().getTypeId()}`)
+    };
 }

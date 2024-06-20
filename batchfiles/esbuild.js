@@ -1,6 +1,6 @@
 const esbuild = require("esbuild");
 const glob = require("glob");
-
+const { esbuildDecorators } = require('@anatine/esbuild-decorators')
 const package_name = "TeseractUHC";
 const version = "2.0.0";
 
@@ -17,7 +17,9 @@ const external = [
 const initialMS = Date.now();
 console.log(`Started building ${package_name}@${version}!`);
 
-const files = glob.sync(["src/**/*.ts", "src/**/*.js"]); 
+const files = glob.sync(["src/**/*.ts", "src/**/*.js"]);
+const tsconfig = "tsconfig.json"
+const cwd = process.cwd()
 esbuild
     .build({
         entryPoints: files,

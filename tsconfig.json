@@ -1,14 +1,19 @@
 {
+    "ts-node": {
+        "esm": true
+    },
     "compilerOptions": {
         "allowJs": true,
+
         "module": "es2020",
+        "esModuleInterop": true,
         "moduleResolution": "node",
         "lib": ["es2020", "DOM"],
         "strict": false,
         "target": "es2020",
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
-        "noImplicitAny": true,
+        "noImplicitAny": false,
 
         "noEmitOnError": true,
         "strictBindCallApply": false,
@@ -36,10 +41,19 @@
         "noEmitHelpers": true,
         "baseUrl": "./src",
         "paths": {
-            "TeseractAPI/*": ["./TeseractAPI/*"]
-        }
+            "@teseract/*": ["./@teseract/*"]
+        },
+        "resolveJsonModule": true
     },
+    // "include": ["./src/**/*.d.ts"],
     // "include": ["scripts/**/*", "scripts/**/*.js"],
-    "exclude": ["node_modules", "exports", "old_version", "behavior_src", "scripts"],
+    "exclude": [
+        "node_modules",
+        "exports",
+        "old_version",
+        "behavior_src",
+        "scripts",
+        "node_modules/@minecraft/server"
+    ],
     "compileOnSave": false
 }

@@ -1,13 +1,13 @@
-import Teseract from "TeseractAPI/Teseract";
-import eventListener from "TeseractAPI/event/EventListener";
-import ItemCompleteUseEvent from "TeseractAPI/event/item/ItemCompleteUseEvent";
-import ItemReleaseUseEvent from "TeseractAPI/event/item/ItemReleaseUseEvent";
-import ItemStartUseEvent from "TeseractAPI/event/item/ItemStartUseEvent";
-import ItemStartUseOnEvent from "TeseractAPI/event/item/ItemStartUseOnEvent";
-import ItemStopUseEvent from "TeseractAPI/event/item/ItemStopUseEvent";
-import ItemStopUseOnEvent from "TeseractAPI/event/item/ItemStopUseOnEvent";
-import ItemUseEvent from "TeseractAPI/event/item/ItemUseEvent";
-import ItemUseOnEvent from "TeseractAPI/event/item/ItemUseOnEvent";
+import Teseract from "@teseract/api/Teseract";
+import eventListener from "@teseract/api/event/EventListener";
+import ItemCompleteUseEvent from "@teseract/api/event/item/ItemCompleteUseEvent";
+import ItemReleaseUseEvent from "@teseract/api/event/item/ItemReleaseUseEvent";
+import ItemStartUseEvent from "@teseract/api/event/item/ItemStartUseEvent";
+import ItemStartUseOnEvent from "@teseract/api/event/item/ItemStartUseOnEvent";
+import ItemStopUseEvent from "@teseract/api/event/item/ItemStopUseEvent";
+import ItemStopUseOnEvent from "@teseract/api/event/item/ItemStopUseOnEvent";
+import ItemUseEvent from "@teseract/api/event/item/ItemUseEvent";
+import ItemUseOnEvent from "@teseract/api/event/item/ItemUseOnEvent";
 
 export default class ItemEventsTest {
     @eventListener("ItemCompleteUseEvent")

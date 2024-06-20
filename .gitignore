@@ -1,4 +1,6 @@
 /node_modules
 /old_version
+/exports
+/build
 /scripts
 /items
